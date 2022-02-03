@@ -1,6 +1,7 @@
 import csv
 import datetime
 
+import tablib
 from django.core.exceptions import PermissionDenied
 from django.http import Http404, HttpResponse
 from django.utils.encoding import smart_str
@@ -46,8 +47,26 @@ class SubmissionListView(SingleObjectMixin, ListView):
 
         if request.GET.get("action") == "CSV":
             return self.csv()
+        elif request.GET.get("action") == "XLSX":
+            return self.xlsx()
 
         return super().get(request, *args, **kwargs)
+
+    def xlsx(self):
+        queryset = self.get_queryset()
+        data_fields = self.object.get_data_fields()
+        data = tablib.Dataset(headers=[smart_str(label) for name, label in data_fields])
+        for s in queryset:
+            data_row = []
+            form_data = s.get_data()
+            for name, label in data_fields:
+                data_row.append(smart_str(form_data.get(name)))
+            data.append(data_row)
+        excel_data = data.export("xlsx")
+        response = HttpResponse(excel_data,
+                                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        response["Content-Disposition"] = "attachment;filename=export.xlsx"
+        return response
 
     def csv(self):
         queryset = self.get_queryset()
