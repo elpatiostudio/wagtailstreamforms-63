@@ -9,7 +9,7 @@ import wagtailstreamforms.streamfield
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('wagtailstreamforms', '0002_form_site'),
+        ('wagtailstreamforms', '0003_auto_20211210_1920'),
     ]
 
     operations = [
