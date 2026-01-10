@@ -4,6 +4,7 @@
 Django>=5
 mock
 psycopg2-binary
+tablib[xls,xlsx]==3.9.0
 
 # example site
 django-recaptcha
