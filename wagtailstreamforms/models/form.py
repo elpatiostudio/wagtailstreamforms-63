@@ -164,7 +164,13 @@ class AbstractForm(models.Model):
     copy.alters_data = True
 
     def get_data_fields(self):
-        """Returns a list of tuples with (field_name, field_label)."""
+        """Returns a list of tuples with (field_name, field_label).
+
+        Calls the ``construct_submission_data_fields`` hook to allow external
+        code to add, remove or reorder columns shown in the submissions table
+        and CSV/XLSX exports.  Each hook receives ``(data_fields, form)`` and
+        must return the (possibly modified) *data_fields* list.
+        """
 
         data_fields = [("submit_time", _("Submission date"))]
         data_fields += [
@@ -173,6 +179,10 @@ class AbstractForm(models.Model):
         ]
         if getattr(settings, "WAGTAILSTREAMFORMS_SHOW_FORM_REFERENCE", False):
             data_fields += [("form_reference", _("Form reference"))]
+
+        for fn in hooks.get_hooks("construct_submission_data_fields"):
+            data_fields = fn(data_fields, self)
+
         return data_fields
 
     def get_form(self, *args, **kwargs):
